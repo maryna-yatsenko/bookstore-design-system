@@ -1,0 +1,133 @@
+name: Deploy Storybook to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Storybook
+        run: npm run build-storybook -- --output-dir storybook-static
+
+      - name: Inject password protection
+        run: |
+          cat > storybook-static/auth.html << 'AUTHEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Design System — Enter password</title>
+            <style>
+              *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+              body {
+                display: flex; align-items: center; justify-content: center;
+                min-height: 100vh; background: #fafafa;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              }
+              .card {
+                background: white; border: 1px solid #dadadc; border-radius: 12px;
+                padding: 40px; width: 360px; text-align: center;
+              }
+              .logo {
+                width: 48px; height: 48px; margin: 0 auto 20px;
+                background: #FAB304; border-radius: 10px;
+                display: flex; align-items: center; justify-content: center;
+              }
+              h1 { font-size: 20px; font-weight: 700; color: #0a0a0a; margin-bottom: 6px; }
+              p { font-size: 14px; color: #747479; margin-bottom: 28px; }
+              input {
+                width: 100%; padding: 10px 14px; border: 1px solid #dadadc;
+                border-radius: 8px; font-size: 14px; outline: none;
+                transition: border-color 0.15s;
+              }
+              input:focus { border-color: #FAB304; }
+              button {
+                width: 100%; margin-top: 12px; padding: 10px;
+                background: #FAB304; border: none; border-radius: 8px;
+                font-size: 14px; font-weight: 600; color: #0a0a0a;
+                cursor: pointer; transition: background 0.15s;
+              }
+              button:hover { background: #e5a200; }
+              .error { color: #e50003; font-size: 13px; margin-top: 10px; display: none; }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="logo">
+                <svg width="28" height="28" viewBox="4 4 32 32" fill="none">
+                  <path d="M17 10.6h7.5c.3 0 .5.1.6.2l.1.5v1.6c-.1.3-.3.4-.6.5H15c-.2 0-.4-.1-.5-.2l-.1-.5v-1.7c.1-.4.7-.4 1-.4h1.6z" fill="white"/>
+                  <path d="M14.9 9.8v-2c0-.3.1-.5.2-.6.1-.1.3-.2.6-.2h9.3c.4 0 .7.2.9.7l.2.5.1.4v1.6c-.1.3-.3.5-.4.6H15.3c-.2-.2-.3-.5-.4-.7z" fill="white" opacity=".9"/>
+                  <path d="M17 13.2h6.5c.3 0 .6 0 .8.1.1.1.2.2.3.4l.5 1.7 1.1 3.6.7 2.3c.1.4.2.7.3 1 .1.5.2 1 .3 1.4l.1.6-1 1.7-2.1 3.5-1.3 2.1-.4.7c-.2.3-.5.4-.7.4l-.4-.2-.1-.2-.1 8.7c0 .3-.1.5-.3.6l-.4.1-.2-.2-3.2-5.3-1.2-2-.7-1.2-.5-.8c-.1-.2-.2-.3-.3-.2l.1.2-.1.1-.3-.3-.3-.4c-.1-.1-.1-.3 0-.4l.1-.3c0-.2.1-.4.2-.6l.4-1.5 1.1-4 1.2-4.3.2-.7c.2-.5.3-.9.4-1.3H15.4c-.2 0-.4-.1-.5-.2l-.1-.5v-1.7c.1-.6.7-.5 1-.5z" fill="white"/>
+                </svg>
+              </div>
+              <h1>BookStore Design System</h1>
+              <p>Enter the password to access</p>
+              <input type="password" id="pwd" placeholder="Password" onkeydown="if(event.key==='Enter')check()" autofocus />
+              <button onclick="check()">Enter</button>
+              <div class="error" id="err">Incorrect password. Try again.</div>
+            </div>
+            <script>
+              const HASH = '${{ secrets.DS_PASSWORD_HASH }}';
+              async function sha256(str) {
+                const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+                return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+              }
+              async function check() {
+                const val = document.getElementById('pwd').value;
+                const hash = await sha256(val);
+                if (hash === HASH) {
+                  sessionStorage.setItem('ds_auth', '1');
+                  window.location.href = './index.html';
+                } else {
+                  document.getElementById('err').style.display = 'block';
+                }
+              }
+              if (sessionStorage.getItem('ds_auth') === '1') {
+                window.location.href = './index.html';
+              }
+            </script>
+          </body>
+          </html>
+          AUTHEOF
+
+          # Wrap the main index.html with an auth guard
+          AUTH_SCRIPT='<script>if(sessionStorage.getItem("ds_auth")!=="1"){window.location.replace("./auth.html");}<\/script>'
+          sed -i "s|</head>|$AUTH_SCRIPT</head>|" storybook-static/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: storybook-static
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

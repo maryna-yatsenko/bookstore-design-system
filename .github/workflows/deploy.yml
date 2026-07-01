@@ -29,15 +29,6 @@ jobs:
       - name: Build Storybook
         run: npm run build-storybook -- --output-dir storybook-static
 
-      - name: Inject password protection
-        run: |
-          # Copy auth page and inject the password hash secret
-          sed 's|__DS_PASSWORD_HASH__|${{ secrets.DS_PASSWORD_HASH }}|g' public/auth.html > storybook-static/auth.html
-
-          # Wrap the main index.html with an auth guard
-          AUTH_SCRIPT='<script>if(sessionStorage.getItem("ds_auth")!=="1"){window.location.replace("./auth.html");}<\/script>'
-          sed -i "s|</head>|$AUTH_SCRIPT</head>|" storybook-static/index.html
-
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -61,7 +61,7 @@ export function Input({
         className={cx(
           styles.field,
           state !== 'default' && STATE_CLASS[state],
-          trailingIcon && styles.fieldWithIcon,
+          Boolean(trailingIcon) && styles.fieldWithIcon,
         )}
       >
         <input

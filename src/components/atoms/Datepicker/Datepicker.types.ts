@@ -15,6 +15,8 @@ export interface DatepickerProps {
   disabled?: boolean;
   /** Start with calendar open (for Storybook) */
   defaultOpen?: boolean;
+  /** Selects a full Mon–Sun week on click instead of individual days */
+  weekMode?: boolean;
   /** Visual state override — used in Storybook to force hover/focused/selected/disabled */
   state?: DatepickerState;
   className?: string;

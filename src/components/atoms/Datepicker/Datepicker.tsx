@@ -59,6 +59,17 @@ const ChevronDoubleRight = () => (
   </svg>
 );
 
+function getWeekRange(date: Date): { start: Date; end: Date } {
+  const day = date.getDay();
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(0, 0, 0, 0);
+  return { start: monday, end: sunday };
+}
+
 function buildCalendarDays(year: number, month: number): (Date | null)[] {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -92,6 +103,7 @@ export function Datepicker({
   defaultOpen = false,
   state,
   className,
+  weekMode = false,
 }: DatepickerProps) {
   const effectiveDisabled = disabled || state === 'disabled';
   const now = new Date();
@@ -122,6 +134,11 @@ export function Datepicker({
   };
 
   const handleDayClick = (date: Date) => {
+    if (weekMode) {
+      const { start, end } = getWeekRange(date);
+      setPending({ start, end });
+      return;
+    }
     if (phase === 'start') {
       setPending({ start: startOfDay(date) });
       setPhase('end');
@@ -166,6 +183,27 @@ export function Datepicker({
     if (!colMonth) return cx(styles.day, styles.dayOutside);
 
     const d = startOfDay(date);
+
+    if (weekMode) {
+      const selStart = pending.start ? startOfDay(pending.start) : null;
+      const selEnd = pending.end ? startOfDay(pending.end) : null;
+
+      if (selStart && selEnd) {
+        if (isSameDay(d, selStart)) return cx(styles.day, styles.dayStart);
+        if (isSameDay(d, selEnd)) return cx(styles.day, styles.dayEnd);
+        if (d > selStart && d < selEnd) return cx(styles.day, styles.dayInRange);
+      }
+
+      if (hoverDate) {
+        const { start: hStart, end: hEnd } = getWeekRange(hoverDate);
+        if (isSameDay(d, hStart)) return cx(styles.day, styles.dayStart);
+        if (isSameDay(d, hEnd)) return cx(styles.day, styles.dayEnd);
+        if (d > hStart && d < hEnd) return cx(styles.day, styles.dayInRange);
+      }
+
+      return styles.day;
+    }
+
     const start = pending.start ? startOfDay(pending.start) : null;
     const end = pending.end ? startOfDay(pending.end) : null;
     const hover = hoverDate ? startOfDay(hoverDate) : null;

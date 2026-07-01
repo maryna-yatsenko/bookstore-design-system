@@ -41,6 +41,7 @@
   --_dd-avatar-bg: var(--container-tertiary);
 
   /* position:relative kept for the ::before focus ring */
+  box-sizing: border-box;
   position: relative;
   display: flex;
   align-items: center;

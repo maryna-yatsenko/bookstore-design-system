@@ -17,7 +17,7 @@
 .titleCell {
   background: var(--container-secondary);
   height: 40px;
-  padding: 12px 8px 12px 12px;
+  padding: 12px;
   color: var(--text-tertiary);
 }
 
@@ -57,6 +57,12 @@
   padding: 0;
   cursor: pointer;
   color: var(--text-tertiary);
+}
+
+/* ── Checkbox cell wrapper (center the checkbox horizontally) ─────────────── */
+.checkboxCell {
+  justify-content: center;
+  padding: 12px;
 }
 
 /* ── Checkbox ─────────────────────────────────────────────────────────────── */
@@ -124,6 +130,13 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.titleTextWrap {
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .subtitleText {

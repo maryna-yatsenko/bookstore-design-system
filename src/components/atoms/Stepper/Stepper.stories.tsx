@@ -3,9 +3,9 @@ import { Stepper } from './Stepper';
 import type { StepConfig } from './Stepper.types';
 
 const RICH_STEPS: StepConfig[] = [
-  { badge: 'Статус', badgeColor: 'white', label: 'Замовлення створено',           actor: 'Клієнт' },
-  { badge: 'Платіж', badgeColor: 'gray',  label: 'Повернення коштів ініційовано', actor: 'Олександр Коваленко' },
-  { badge: 'Статус', badgeColor: 'white', label: 'Замовлення скасовано',           actor: 'Клієнт' },
+  { badge: 'Status',  badgeColor: 'white', label: 'Order created',   actor: 'Customer' },
+  { badge: 'Payment', badgeColor: 'gray',  label: 'Refund initiated', actor: 'Oleksandr Kovalenko' },
+  { badge: 'Status',  badgeColor: 'white', label: 'Order cancelled', actor: 'Customer' },
 ];
 
 const meta = {

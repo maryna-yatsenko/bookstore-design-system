@@ -64,7 +64,7 @@ export function Stepper({ steps, activeStep, className, style }: StepperProps) {
                   {/* Actor row */}
                   {step.actor && (
                     <div className={cx(styles.actorRow, isNext && styles.actorRowNext)}>
-                      <span className={styles.actorPrefix}>Виконавець:</span>
+                      <span className={styles.actorPrefix}>Assignee:</span>
                       <span className={styles.actorName}>{step.actor}</span>
                       <ArrowRightIcon />
                     </div>

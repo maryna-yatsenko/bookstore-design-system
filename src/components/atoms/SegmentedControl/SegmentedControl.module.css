@@ -11,7 +11,7 @@
   padding: 2px;
   gap: 4px;
   background-color: var(--container-primary);
-  border: 1px solid var(--stroke-secondary);
+  border: none;
   border-radius: var(--radius-6);
   box-shadow:
     1px 1px 1px 0px rgba(26, 1, 38, 0.06),

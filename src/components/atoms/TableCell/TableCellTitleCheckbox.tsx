@@ -18,7 +18,7 @@ export function TableCellTitleCheckbox({
   }, [indeterminate]);
 
   return (
-    <div className={cx(styles.cell, styles.titleCell, className)} style={style}>
+    <div className={cx(styles.cell, styles.titleCell, styles.checkboxCell, className)} style={style}>
       <input
         ref={ref}
         type="checkbox"

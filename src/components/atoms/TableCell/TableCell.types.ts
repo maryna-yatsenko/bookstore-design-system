@@ -8,6 +8,8 @@ export interface TableCellTitleProps {
   labelText?:  string;
   showLabel?:  boolean;
   showSort?:   boolean;
+  sortDir?:    'asc' | 'desc' | null;
+  onSort?:     () => void;
   className?:  string;
   style?:      CSSProperties;
 }
@@ -28,6 +30,7 @@ export interface TableCellTextProps {
   statusText?:   string;
   statusType?:   StatusStatus;
   image?:        boolean;
+  titleWrap?:    boolean;
   className?:    string;
   style?:        CSSProperties;
 }
